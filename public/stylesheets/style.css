@@ -1,0 +1,145 @@
+html, body {
+  font: 17px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background: #ff525e;
+  height: 100%;
+  width: 100%;
+  overflow-y: hidden;
+  margin: 0px;
+}
+
+a {
+  color: #00B7FF;
+}
+
+input {
+    /* round the corners */
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;    
+}
+
+input:focus { 
+    outline:none;
+    border: 1px solid #4195fc; 
+    /* create a BIG glow */
+    box-shadow: 0px 0px 14px #4195fc; 
+    -moz-box-shadow: 0px 0px 14px #4195fc;
+    -webkit-box-shadow: 0px 0px 14px #4195fc;     
+}
+
+#info {
+	margin: 3px;
+	padding: 3px;
+}
+
+#mixtapeContent {
+	display:none;
+	width: 100% !important;
+	height: auto !important;
+	padding: -5%;
+	margin: -5%;
+	max-height: 200px;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+	
+}
+
+#media {
+	width: auto !important;
+	height: auto !important;
+	max-height: 200px;
+	max-width: 300px;
+	padding: -5%;
+	margin: -5%;
+}
+
+.media {
+	width: 100% !important;
+	height: auto !important;
+	max-height: 200px;
+	max-width: 300px;
+	padding: -5%;
+	margin: -5%;
+}
+
+#emu {
+	display:flex;
+	align-self: left;
+	align-items: left;
+	justify-content: left;
+}
+
+#messages {
+	width: 100%;
+	height: 30%;
+	padding: 10px;
+	word-wrap: break-word;
+	overflow-y:wrap;
+	overflow-x:auto;
+}
+
+#chat {
+	display:flex;
+	flex-wrap: wrap;
+	background: #ffffff;
+	border: 3px solid #ffc425;
+	border-radius: 25px;
+	box-shadow: 0px 0px 14px #04060b; 
+	height: 95%;
+	margin: 10px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-direction: row /* works with row or column */
+	flex-direction: row;
+	-webkit-align-items: center;
+	align-items: center;
+	-webkit-justify-content: center;
+	justify-content: center;
+}
+
+#entryFields {
+	padding: 10px;
+	display:flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#container {
+	/*border: 1px solid black;*/
+    display: inline-block;
+    position: relative;
+}
+
+#watermark {
+	position: absolute;
+    left: 0px;
+    top: 0px;
+    margin: 10px;
+    padding: 5px 5px;
+    font-size: 20px;
+    font-family: Helvetica;
+    color: #FFF;
+    background-color: rgba(50, 50, 50, 0.3);
+}
+
+#videoChat {
+	display:flex;
+	height: auto !important;
+	width: 100% !important;
+	max-height: 330px;
+	padding: 0px;
+	align-self: center;
+	align-items: center;
+	justify-content: center;
+}
+
+.video {
+	width: 100% !important;
+	height: auto !important;
+	padding: 0px;
+	max-height: 330px;
+	max-width: 440px;
+}

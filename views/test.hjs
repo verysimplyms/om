@@ -1,0 +1,56 @@
+<html>
+	<head>
+		<script src='openpgp.min.js'></script>
+	</head>
+
+	<body>
+	</body>
+	<script>
+	
+	var openpgp = window.openpgp; 
+	openpgp.initWorker({ path:'openpgp.worker.min.js' }) 
+
+	
+	var test = ["-----BEGIN PGP PUBLIC KEY BLOCK-----" ,
+	"Version: GnuPG v2" ,
+	"",
+"mQENBFdkNe4BCADH+6zJs2yArCtl2R5kTezj3isZ1BkBPUKGcRLswZScl2Ich+JK",
+"DE4o7ylNauoih5i8vSj42ja3T2IQkW2GXZCqqAW6XPgm+lrCIRO+lLNXk3MtFD/i",
+"ZyFD7/wJ1uwXyVJSp6NhX+Kybn3pUGk4xuwTsssOFd86A7Uxs8kZ8zxKqDRMQLHY",
+"/BkgxxxAva3f1yXU48brNFJPcfspVhxWfDY5dA+zXW+WC+ODGAEhITd2FZgE5D69",
+"SnulwFReNBcya8K6NT6txldXHyHLqdydhsVqrblZagTxX+bTer8htQdOM69ovTEc",
+"MPVoTQdH93L6LlnT9eYQUkzwRlYupAoLz28nABEBAAG0I05pY28gQ3JvcHAgPHRl",
+"a2VvdXNAcHJvdG9ubWFpbC5jb20+iQE3BBMBCAAhBQJXZDXuAhsDBQsJCAcCBhUI",
+"CQoLAgQWAgMBAh4BAheAAAoJEFtZLCZoDvbMAJsIALmPKNzPzkZioFeuqWFREfRL",
+"lZ1eHOJRTCrAzB+jX4hWTvDpr0akd6ExbDhP/L64/16+u3qwnaDnRbODm49InA1f",
+"0MvoTQW40Ig4ZkjUyosmqDhXPUga9B8WQfiiBRBiTSIjZSZ+KBKnJINiNk37Eh0T",
+"GcJSsXdHtj6Cl0VZux4eYTP1Dz+rTc7Mun559JLllDKf7qD22pp3DYWVJGkp9LV0",
+"6RzetAjWQbf/vpQMjj/J9dbrLGUT8AYNxLrx5yiiPcNVIdTXu7aTHIuje/yIjPp3",
+"gy3EbwiQ1SnAAxI/6o0+r0bul5EPGCkRAL5OREDkzTKR6PT2P5oWUV1KL/z5/BW5",
+"AQ0EV2Q17gEIAJ25KSQiq2br4ska6dFHnRaxo6qITXysYBKnbwBNpXc9be4cItCU",
+"v16SPSHPNKBLODJ4HkcKfgPMWpZ5C4U8Uj5JZUZYjEEL8jaEP4gTc+A6sO2+iPB1",
+"RUsV+jL3EwrRoCor3xeZ5RYoLK5evfaVXlAaBOOrutwKt2fR9DM+7Kg9x/MRRcdY",
+"E8VipBAFN7EvgzdiAfCVgLE3wT2kgGOzBcpTFOor6xh/DMSEdhPdPUJawi4mYQeY",
+"eOm57GZ2CSJPzuAo/w2YPL1oRbBLaoSaSwz/iGhCpn/w96J9rd+BSvRa5hYKH1hh",
+"3MpaGCeqBWJcMsSvgERFDBUOZu16+0/QnEUAEQEAAYkBHwQYAQgACQUCV2Q17gIb",
+"DAAKCRBbWSwmaA72zFZVB/9SprX/0llick8UwISKrRxxvMyyWqPINgDEos5zvOQ8",
+"gRk412r4GEVbsPXr/Ka5kGtyPAAeK6vB8GWdeRHHIBgrQg5xEBrdCeZMgb7pGxzv",
+"caiV44aj9cwGFjSGsALzf2pNvIRUYoPGMpOX6eC55fPWQ7iBG6LjwkXRR0c7JY1t",
+"buCbwgqkGyWQSnPM8Of8AwUxgLPzJNDj2/XLPzus0Icz/3farxVF+f46heQkVmQR",
+"YlBQidZlXKyv1qwFkdbL4OLw7s3OWomzpup2mbGHMtxWdm9goW85qIf5aE59yqGk",
+"Xt2zbJcjderGdpryXxBiGEvcI3704a0UmZ/6TzwrxYvu",
+"=1RwX",
+"-----END PGP PUBLIC KEY BLOCK-----" ].join('\n');
+
+options = {
+						data: 'memes',
+						publicKeys: openpgp.key.readArmored(test).keys,
+					};
+					
+					openpgp.encrypt(options).then(function(ciphertext) {
+						encryptedMessage = ciphertext.data;
+						document.write(encryptedMessage);
+					});
+
+	</script>
+</html>

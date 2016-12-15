@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+	<link rel="stylesheet" href="//cdn.jsdelivr.net/emojione/2.1.4/assets/css/emojione.min.css"/>
+	<script src="//cdn.jsdelivr.net/emojione/2.1.4/lib/js/emojione.min.js"></script>
+  </head>
+  <body>	
+	<div id='chat'>
+			<div id='videoChat'>
+				<div id='container'>
+					<div id='watermark'>{{ title }}</div>
+					<video id="peer" class='video' controls autoplay></video>
+				</div>
+				<div id='container'>
+					<video id="client" class='video'  controls autoplay muted></video>
+				</div>
+				<audio id='messageAudio' src='/messageAudio.mp3'></audio>
+			</div>
+			
+		<div id='mixtapeContent'>
+			<div id='media'></div>
+		</div>
+		
+		<div id='messages'>
+			<center>
+				<p>Please check the <b>TOP RIGHT</b> (in Chrome) <b>TOP LEFT</b> (in Firefox) of your browser and make sure your webcam/mic is accessible to the browser!<br /></p>
+				<p><b>Welcome to {{ title }}</b>, A <a href='https://www.google.com/#q=Flash+security&tbm=nws'>flash-free</a>, <a href="https://github.com/socketio/socket.io-p2p">peer-to-peer</a>, encrypted (both with SSL as well as <a href='https://github.com/openpgpjs/openpgpjs'>PGP</a>), <a href='https://github.com/verysimplyms/om'>FLOSS</a> alternative to Omegle/Chatroulette/etc.</p>
+				<p>No accounts! :stuck_out_tongue_winking_eye: Just type in an interest (or none if you prefer) and a username (again, not required), then feel free to jump in.</p>
+				<p><b>Features:</b> <br /> <a href="https://github.com/Ranks/emojione">EmojiOne</a> support - :joy: :joy: :fire: :100: :fire:  - codes listed <a href='http://emoji.codes/'>here</a>. 
+				<br /><a href='https://mixtape.moe'>Mixtape</a> :cd: support for sending images and webms! Simply type [mixtape](end of url)[/mixtape]
+				<br />[mixtape]bdecyv.mp3[/mixtape] will be <audio src='https://my.mixtape.moe/bdecyv.mp3' controls></audio> <i>(William Bolton: Bae for the Night)</i></p>
+				<p>Final special thanks to <a href='http://stackoverflow.com/a/35387759'>Kecer</a> on Stackoverflow where I found the basis of the code for {{ title }}!</p>
+			</center>
+		</div>
+		<div id='entryFields'>
+			<input id='text' type='text' value='' maxlength= '140' disabled />
+			<input type='submit' id='send' value="Send"/>
+			<input type='submit' id='next' value="Find New Partner"/>
+			<input type='submit' id='hideMedia' value='Hide Media Content'/>
+			<input type='submit' id='dontEmitStream' value="Stop Video/Audio Stream"/>
+			<div id= 'info'>
+				<input id='username' placeholder='username' type='text' maxlength='15' value='' enabled />
+				<input id='interest' placeholder='interest' type='text' maxlength='15' value='' enabled />
+			</div>
+			<input type='submit' id='report' value="Report Partner"/>
+		</div>
+	</div>
+		
+  </body>
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script src='openpgp.min.js'></script>
+  <script src="/p2pfinished.js"></script>
+</html>
