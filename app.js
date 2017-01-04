@@ -4,13 +4,14 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-//var https = require('https');
+var https = require('https');
 var http = require('http');
 var fs = require('fs');
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://OPENSHIFT_MONGODB_DB_URL/om');
-var banStatusSchema = mongoose.Schema({
+mongoose.connect('mongodb://localhost/om');
+var Schema = mongoose.Schema;
+var banStatusSchema = new Schema({
     ip: {type: String, index: {unique: true, required: true}},
 	ids: [String],
 	reportCount: Number,
@@ -18,68 +19,22 @@ var banStatusSchema = mongoose.Schema({
 	banStatus: Boolean
 });
 
-banStatusSchema.methods.checkBan(ip, ids) {
-	var query = banStatusSchema.findOne({'ip': ip})
-								.select('ip ids reportCount banned banStatus')
-								.exec(function(err, banStatusSchema){
-									bss = banStatusSchema;
-									if(bss == null) {
-										new banStatusSchema({
-											ip: ip,
-											ids: ids,
-											reportCount: 0,
-											banned: 0,
-											banStatus: false
-										}).save(function(err, doc){
-											if(err) {
-												throw err;
-											}
-										})
-									} else {
-										if (bss.banStatus == true) {
-											if(bss.banned > Date.now()) {
-													socket.emit('banned', {untilDate: (bss.banned)});
-													socket.disconnect();
-												}
-											} else if (bss.banned <= Date.now()) {
-												if(socketReports[IPbySocketId[socket.id]].banned != 0) {
-													bss.reportCount = 0;
-													bss.banned = 0;
-													bss.banStatus = false;
-												}
-											}	
-										}
-									})
-}
+var banStatusModel = mongoose.model('banStatusModel', banStatusSchema);
 
-banStatusSchema.methods.reportIncrement(ids) {
-	var query = banStatusSchema.findOne({'ids': ids})
-								.select('ip ids reportCount banned banStatus')
-								.exec(function(err, banStatusSchema){
-									bss = banStatusSchema;
-									bss.reportCount++;
-									if(bss.reportCount >= 5) {
-										bss.banned = Date.now() + (604800 * 1000);
-										bss.banStatus = true;
-									}
-								})
-}
-
-
-/*
 var options = {
     key: fs.readFileSync('./invalidCerts/57926271-192.168.0.3.key'),
     cert: fs.readFileSync('./invalidCerts/57926271-192.168.0.3.cert'),
 }
-*/
+
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
-//var server = https.createServer(options, app);
+var server = https.createServer(options, app);
 var serverUnsecure = http.createServer(app);
-var io = require('socket.io')(serverUnsecure, {'pingInterval': 2000, 'pingTimeout': 5000});
+//var io = require('socket.io')(serverUnsecure);
+var io = require('socket.io')(server);
 var p2p = require('socket.io-p2p-server').Server
 
 function redirectSec(req, res, next) {
@@ -94,8 +49,8 @@ app.all('*', redirectSec);
 
 var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 var ipaddress = process.env.OPENSHIFT_NODEJS_IP || "localhost";
-//var portUnsecure = 80;
-//server.listen(port);
+var portUnsecure = 80;
+server.listen(port);
 serverUnsecure.listen(port, ipaddress);
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -176,27 +131,82 @@ var findPeerForLoneSocket = function(socket) {
 	
 }
 
+var addToDB = function(doc) {
+
+	if(doc.ids.length > 3) {
+	temp = doc.ids;
+	docs.ids = [];
+	doc.ids[0] = temp[temp.length];
+	doc.ids[1] = temp[temp.length-1];
+	doc.ids[2] = temp[temp.length-2];
+	}
+	
+	doc.ids.push(socket.id);
+	console.log(doc.ids);
+	doc.save(function(err, doc) {
+		if (err) throw err;
+	})
+}
+
 io.on('connection', function(socket) {
 	socket.on('login', function (data){
 		var socketIPAddr = socket.handshake.address || socket.client.conn.remoteAddress;
 		
 		if(typeof IPbySocketId[socket.id] == 'undefined') {
 			IPbySocketId[socket.id] = socketIPAddr;
-		}
+			
+			banStatusModel.findOne({'ip': socketIPAddr}, function(err, doc) {
+				if(doc != null) {
+					if(doc.banStatus == true) {
+						if(doc.banned > Date.now()) {
+							socket.emit('banned', {untilDate: (doc.banned)});
+							socket.disconnect();
+						} else if(doc.banned != 0 && doc.banned <= Date.now()){
+							doc.reportCount = 0;
+							doc.banned = 0;
+							doc.banStatus = false;
+							
+							addToDB(doc);
+						}
+					} else {
+						addToDB(doc);
+					}
+					
+				} else {
+					new banStatusModel({
+						ip: socketIPAddr,
+						ids: socket.id,
+						reportCount: 0,
+						banned: 0,
+						banStatus: false
+					}).save(function(err, doc){
+						if (err) throw err;
+					})
+				}
+			})
+			}
 		
-		banStatusSchema.checkBan(socketIPAddr);
+		
 
 		socket.on('report', function(data) {		
-			banStatusSchema.reportIncrement(data)
+			banStatusModel.findOne({'ids': data})
+							.select('ip ids reportCount banned banStatus')
+							.exec(function(err, banStatusSchema){
+									bss = banStatusSchema;
+									bss.reportCount++;
+									if(bss.reportCount >= 5) {
+										bss.banned = Date.now() + (604800 * 1000);
+										bss.banStatus = true;
+									}
+									bss.save();
+								})
 		});
 		
-		if(data.username.length <= 15 && data.interest.length <= 15 && !socketReports[IPbySocketId[socket.id]].bannedStatus) {
-			if(typeof socket.previousInterest == 'undefined' || typeof socket.interest == 'undefined') {
-				socket.previousInterest = '';
+		if(data.username.length <= 15 && data.interest.length <= 15) {
+			if(typeof socket.interest == 'undefined') {
 				socket.interest = '';
 			}
-			
-			socket.previousInterest = socket.interest;
+
 			names[socket.id] = data.username.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 			console.log('User: '+ names[socket.id] + ' - ' + socket.id + ' connected');		
 			socket.interest = data.interest.toLowerCase().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(' ', '');
