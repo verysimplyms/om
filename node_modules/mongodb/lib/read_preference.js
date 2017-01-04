@@ -3,7 +3,7 @@
 /**
  * @fileOverview The **ReadPreference** class is a class that represents a MongoDB ReadPreference and is
  * used to construct connections.
- * 
+ *
  * @example
  * var Db = require('mongodb').Db,
  *   ReplSet = require('mongodb').ReplSet,
@@ -27,7 +27,7 @@
 
 /**
  * Creates a new ReadPreference instance
- * 
+ *
  * Read Preferences
  *  - **ReadPreference.PRIMARY**, Read from primary only. All operations produce an error (throw an exception where applicable) if primary is unavailable. Cannot be combined with tags (This is the default.).
  *  - **ReadPreference.PRIMARY_PREFERRED**, Read from primary if available, otherwise a secondary.
@@ -37,17 +37,33 @@
  *
  * @class
  * @param {string} mode The ReadPreference mode as listed above.
- * @param {object} tags An object representing read preference tags.
- * @property {string} mode The ReadPreference mode.
- * @property {object} tags The ReadPreference tags.
+ * @param {array|object} tags An object representing read preference tags.
+ * @param {object} [options] Additional read preference options
+ * @param {number} [options.maxStalenessSeconds] Max Secondary Read Stalleness in Seconds
  * @return {ReadPreference} a ReadPreference instance.
- */ 
-var ReadPreference = function(mode, tags) {
-  if(!(this instanceof ReadPreference))
-    return new ReadPreference(mode, tags);
+ */
+var ReadPreference = function(mode, tags, options) {
+  if(!(this instanceof ReadPreference)) {
+    return new ReadPreference(mode, tags, options);
+  }
+
   this._type = 'ReadPreference';
   this.mode = mode;
   this.tags = tags;
+  this.options =  options;
+
+  // If no tags were passed in
+  if(tags && typeof tags == 'object' && !Array.isArray(tags)) {
+    if(tags.maxStalenessSeconds) {
+      this.options = tags;
+      this.tags = null;
+    }
+  }
+
+  // Add the maxStalenessSeconds value to the read Preference
+  if(this.options && this.options.maxStalenessSeconds) {
+    this.maxStalenessSeconds = this.options.maxStalenessSeconds;
+  }
 }
 
 /**
@@ -56,7 +72,7 @@ var ReadPreference = function(mode, tags) {
  * @method
  * @param {string} mode The string representing the read preference mode.
  * @return {boolean}
- */  
+ */
 ReadPreference.isValid = function(_mode) {
   return (_mode == ReadPreference.PRIMARY || _mode == ReadPreference.PRIMARY_PREFERRED
     || _mode == ReadPreference.SECONDARY || _mode == ReadPreference.SECONDARY_PREFERRED
@@ -70,7 +86,7 @@ ReadPreference.isValid = function(_mode) {
  * @method
  * @param {string} mode The string representing the read preference mode.
  * @return {boolean}
- */  
+ */
 ReadPreference.prototype.isValid = function(mode) {
   var _mode = typeof mode == 'string' ? mode : this.mode;
   return ReadPreference.isValid(_mode);
@@ -86,7 +102,18 @@ ReadPreference.prototype.toObject = function() {
     object['tags'] = this.tags;
   }
 
+  if(this.maxStalenessSeconds) {
+    object['maxStalenessSeconds'] = this.maxStalenessSeconds;
+  }
+
   return object;
+}
+
+/**
+ * @ignore
+ */
+ReadPreference.prototype.toJSON = function() {
+  return this.toObject();
 }
 
 /**

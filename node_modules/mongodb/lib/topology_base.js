@@ -63,26 +63,56 @@ Store.prototype.addObjectAndMethod = function(opType, object, method, params, ca
   this.s.storedOps.push({t: opType, m: method, o: object, p: params, c: callback})
 }
 
-Store.prototype.flush = function() {
+Store.prototype.flush = function(err) {
   while(this.s.storedOps.length > 0) {
-    this.s.storedOps.shift().c(MongoError.create({message: f("no connection available for operation"), driver:true }));
+    this.s.storedOps.shift().c(err || MongoError.create({message: f("no connection available for operation"), driver:true }));
   }
 }
 
-Store.prototype.execute = function() {
+var primaryOptions = ['primary', 'primaryPreferred', 'nearest', 'secondaryPreferred'];
+var secondaryOptions = ['secondary', 'secondaryPreferred'];
+
+Store.prototype.execute = function(options) {
+  options = options || {};
   // Get current ops
   var ops = this.s.storedOps;
   // Reset the ops
   this.s.storedOps = [];
+
+  // Unpack options
+  var executePrimary = typeof options.executePrimary === 'boolean'
+    ? options.executePrimary : true;
+  var executeSecondary = typeof options.executeSecondary === 'boolean'
+    ? options.executeSecondary : true;
 
   // Execute all the stored ops
   while(ops.length > 0) {
     var op = ops.shift();
 
     if(op.t == 'cursor') {
-      op.o[op.m].apply(op.o, op.p);
+      if(executePrimary && executeSecondary) {
+        op.o[op.m].apply(op.o, op.p);
+      } else if(executePrimary && op.o.options
+        && op.o.options.readPreference
+        && primaryOptions.indexOf(op.o.options.readPreference.mode) != -1) {
+          op.o[op.m].apply(op.o, op.p);
+      } else if(!executePrimary && executeSecondary && op.o.options
+        && op.o.options.readPreference
+        && secondaryOptions.indexOf(op.o.options.readPreference.mode) != -1) {
+          op.o[op.m].apply(op.o, op.p);
+      }
+    } else if(op.t == 'auth') {
+      this.s.topology[op.t].apply(this.s.topology, op.o);
     } else {
-      this.s.topology[op.t](op.n, op.o, op.op, op.c);
+      if(executePrimary && executeSecondary) {
+        this.s.topology[op.t](op.n, op.o, op.op, op.c);
+      } else if(executePrimary && op.op && op.op.readPreference
+        && primaryOptions.indexOf(op.op.readPreference.mode) != -1) {
+          this.s.topology[op.t](op.n, op.o, op.op, op.c);
+      } else if(!executePrimary && executeSecondary && op.op && op.op.readPreference
+        && secondaryOptions.indexOf(op.op.readPreference.mode) != -1) {
+          this.s.topology[op.t](op.n, op.o, op.op, op.c);
+      }
     }
   }
 }
@@ -108,6 +138,8 @@ var ServerCapabilities = function(ismaster) {
   var listCollections = false;
   var listIndexes = false;
   var maxNumberOfDocsInBatch = ismaster.maxWriteBatchSize || 1000;
+  var commandsTakeWriteConcern = false;
+  var commandsTakeCollation = false;
 
   if(ismaster.minWireVersion >= 0) {
     textSearch = true;
@@ -125,6 +157,11 @@ var ServerCapabilities = function(ismaster) {
   if(ismaster.maxWireVersion >= 3) {
     listCollections = true;
     listIndexes = true;
+  }
+
+  if(ismaster.maxWireVersion >= 5) {
+    commandsTakeWriteConcern = true;
+    commandsTakeCollation = true;
   }
 
   // If no min or max wire version set to 0
@@ -146,6 +183,8 @@ var ServerCapabilities = function(ismaster) {
   setup_get_property(this, "minWireVersion", ismaster.minWireVersion);
   setup_get_property(this, "maxWireVersion", ismaster.maxWireVersion);
   setup_get_property(this, "maxNumberOfDocsInBatch", maxNumberOfDocsInBatch);
+  setup_get_property(this, "commandsTakeWriteConcern", commandsTakeWriteConcern);
+  setup_get_property(this, "commandsTakeCollation", commandsTakeCollation);
 }
 
 exports.Store = Store;

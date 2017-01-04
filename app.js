@@ -7,6 +7,64 @@ var bodyParser = require('body-parser');
 //var https = require('https');
 var http = require('http');
 var fs = require('fs');
+var mongoose = require('mongoose');
+
+mongoose.connect('mongodb://OPENSHIFT_MONGODB_DB_URL/om');
+var banStatusSchema = mongoose.Schema({
+    ip: {type: String, index: {unique: true, required: true}},
+	ids: [String],
+	reportCount: Number,
+	banned: Date,
+	banStatus: Boolean
+});
+
+banStatusSchema.methods.checkBan(ip, ids) {
+	var query = banStatusSchema.findOne({'ip': ip})
+								.select('ip ids reportCount banned banStatus')
+								.exec(function(err, banStatusSchema){
+									bss = banStatusSchema;
+									if(bss == null) {
+										new banStatusSchema({
+											ip: ip,
+											ids[0]: ids,
+											reportCount: 0,
+											banned: 0,
+											banStatus: false
+										}).save(function(err, doc){
+											if(err) {
+												throw err;
+											}
+										})
+									} else {
+										if (bss.banStatus == true) {
+											if(bss.banned > Date.now()) {
+													socket.emit('banned', {untilDate: (bss.banned)});
+													socket.disconnect();
+												}
+											} else if (bss.banned <= Date.now()) {
+												if(socketReports[IPbySocketId[socket.id]].banned != 0) {
+													bss.reportCount = 0;
+													bss.banned = 0;
+													bss.banStatus = false;
+												}
+											}	
+										}
+									})
+}
+
+banStatusSchema.methods.reportIncrement(ids) {
+	var query = banStatusSchema.findOne({'ids': ids})
+								.select('ip ids reportCount banned banStatus')
+								.exec(function(err, banStatusSchema){
+									bss = banStatusSchema;
+									bss.reportCount++;
+									if(bss.reportCount >= 5) {
+										bss.banned = Date.now() + (604800 * 1000);
+										bss.banStatus = true;
+									}
+								})
+}
+
 
 /*
 var options = {
@@ -119,7 +177,6 @@ var findPeerForLoneSocket = function(socket) {
 }
 
 io.on('connection', function(socket) {
-
 	socket.on('login', function (data){
 		var socketIPAddr = socket.handshake.address || socket.client.conn.remoteAddress;
 		

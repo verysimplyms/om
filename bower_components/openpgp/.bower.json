@@ -1,6 +1,6 @@
 {
   "name": "openpgp",
-  "version": "2.3.0",
+  "version": "2.3.5",
   "license": "LGPL-3.0+",
   "homepage": "http://openpgpjs.org/",
   "authors": [
@@ -36,14 +36,14 @@
     "tests",
     "doc"
   ],
-  "_release": "2.3.0",
+  "_release": "2.3.5",
   "_resolution": {
     "type": "version",
-    "tag": "v2.3.0",
-    "commit": "ceee85ef35938dfbde581066418567a78ea16f33"
+    "tag": "v2.3.5",
+    "commit": "d64665e5fe7910d4c37d7d63520ef9c95f675a00"
   },
   "_source": "https://github.com/openpgpjs/openpgpjs.git",
-  "_target": "^2.3.0",
+  "_target": "^2.3.5",
   "_originalSource": "openpgp",
   "_direct": true
 }

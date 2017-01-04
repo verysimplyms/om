@@ -1,6 +1,5 @@
-var shallowClone = require('../utils').shallowClone;
-var stream = require('stream');
-var util = require('util');
+var stream = require('stream'),
+  util = require('util');
 
 module.exports = GridFSBucketReadStream;
 
@@ -25,7 +24,6 @@ module.exports = GridFSBucketReadStream;
  */
 
 function GridFSBucketReadStream(chunks, files, readPreference, filter, options) {
-  var _this = this;
   this.s = {
     bytesRead: 0,
     chunks: chunks,
@@ -91,6 +89,7 @@ GridFSBucketReadStream.prototype._read = function() {
   if (this.destroyed) {
     return;
   }
+
   waitForFile(_this, function() {
     doRead(_this);
   });
@@ -197,22 +196,26 @@ function doRead(_this) {
     var expectedN = _this.s.expected++;
     var expectedLength = Math.min(_this.s.file.chunkSize,
       bytesRemaining);
+
     if (doc.n > expectedN) {
       var errmsg = 'ChunkIsMissing: Got unexpected n: ' + doc.n +
         ', expected: ' + expectedN;
       return __handleError(_this, new Error(errmsg));
     }
+
     if (doc.n < expectedN) {
-      var errmsg = 'ExtraChunk: Got unexpected n: ' + doc.n +
+      errmsg = 'ExtraChunk: Got unexpected n: ' + doc.n +
         ', expected: ' + expectedN;
       return __handleError(_this, new Error(errmsg));
     }
+
     if (doc.data.length() !== expectedLength) {
       if (bytesRemaining <= 0) {
-        var errmsg = 'ExtraChunk: Got unexpected n: ' + doc.n;
+        errmsg = 'ExtraChunk: Got unexpected n: ' + doc.n;
         return __handleError(_this, new Error(errmsg));
       }
-      var errmsg = 'ChunkIsWrongSize: Got unexpected length: ' +
+
+      errmsg = 'ChunkIsWrongSize: Got unexpected length: ' +
         doc.data.length() + ', expected: ' + expectedLength;
       return __handleError(_this, new Error(errmsg));
     }
@@ -226,6 +229,7 @@ function doRead(_this) {
     var sliceStart = null;
     var sliceEnd = null;
     var buf = doc.data.buffer;
+
     if (_this.s.bytesToSkip != null) {
       sliceStart = _this.s.bytesToSkip;
       _this.s.bytesToSkip = 0;
@@ -235,13 +239,20 @@ function doRead(_this) {
       sliceEnd = _this.s.bytesToTrim;
     }
 
+    // If the remaining amount of data left is < chunkSize read the right amount of data
+    if (_this.s.options.end && (
+      (_this.s.options.end - _this.s.bytesToSkip) < doc.data.length()
+    )) {
+      sliceEnd = (_this.s.options.end - _this.s.bytesToSkip);
+    }
+
     if (sliceStart != null || sliceEnd != null) {
       buf = buf.slice(sliceStart || 0, sliceEnd || buf.length);
     }
 
     _this.push(buf);
-  });
-};
+  })
+}
 
 /**
  * @ignore
@@ -318,8 +329,8 @@ function waitForFile(_this, callback) {
 
   _this.once('file', function() {
     callback();
-  });
-};
+  })
+}
 
 /**
  * @ignore

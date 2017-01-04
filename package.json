@@ -16,6 +16,8 @@
     "openpgp": "^2.3.0",
     "serve-favicon": "~2.3.0",
     "simple-peer": "^6.0.4",
-	"socket.io": "*"
+	"socket.io": "*",
+	"socket.io-p2p-server": "*",
+	"mongoose": "*"
   }
 }
