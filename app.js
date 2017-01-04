@@ -26,7 +26,7 @@ banStatusSchema.methods.checkBan(ip, ids) {
 									if(bss == null) {
 										new banStatusSchema({
 											ip: ip,
-											ids[0]: ids,
+											ids: ids,
 											reportCount: 0,
 											banned: 0,
 											banStatus: false
@@ -183,35 +183,11 @@ io.on('connection', function(socket) {
 		if(typeof IPbySocketId[socket.id] == 'undefined') {
 			IPbySocketId[socket.id] = socketIPAddr;
 		}
-				
-		if(typeof socketReports[IPbySocketId[socket.id]] == 'undefined') {
-			socketReports[IPbySocketId[socket.id]] = {};
-			socketReports[IPbySocketId[socket.id]].reportCount = 0;
-			socketReports[IPbySocketId[socket.id]].banned = 0;
-			socketReports[IPbySocketId[socket.id]].bannedStatus = false;
-		}
 		
-		if(socketReports[IPbySocketId[socket.id]].banned > Date.now()) {
-			if(socketReports[IPbySocketId[socket.id]].banned != 0) {
-				console.log(socketReports[IPbySocketId[socket.id]].banned)
-				socket.emit('banned', {untilDate: (socketReports[IPbySocketId[socket.id]].banned)});
-				socket.disconnect();
-			}
-		} else if (socketReports[IPbySocketId[socket.id]].banned <= Date.now()) {
-			if(socketReports[IPbySocketId[socket.id]].banned != 0) {
-				socketReports[IPbySocketId[socket.id]].reportCount = 0;
-				socketReports[IPbySocketId[socket.id]].banned = 0;
-				socketReports[IPbySocketId[socket.id]].bannedStatus = false;
-			}
-		}		
-		
+		banStatusSchema.checkBan(socketIPAddr);
+
 		socket.on('report', function(data) {		
-			socketReports[IPbySocketId[data]].reportCount++
-			
-			if(socketReports[IPbySocketId[data]].reportCount >= 5) {
-				socketReports[IPbySocketId[data]].banned = Date.now() + (604800 * 1000);
-				socketReports[IPbySocketId[data]].bannedStatus = true;
-			}
+			banStatusSchema.reportIncrement(data)
 		});
 		
 		if(data.username.length <= 15 && data.interest.length <= 15 && !socketReports[IPbySocketId[socket.id]].bannedStatus) {
