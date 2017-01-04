@@ -4,12 +4,14 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var https = require('https');
+//var https = require('https');
 var http = require('http');
 var fs = require('fs');
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/om');
+//mongoose.connect('mongodb://localhost/om');
+mongoose.connect(OPENSHIFT_MONGODB_DB_URL+'om');
+1
 var Schema = mongoose.Schema;
 var banStatusSchema = new Schema({
     ip: {type: String, index: {unique: true, required: true}},
@@ -21,20 +23,21 @@ var banStatusSchema = new Schema({
 
 var banStatusModel = mongoose.model('banStatusModel', banStatusSchema);
 
+/*
 var options = {
     key: fs.readFileSync('./invalidCerts/57926271-192.168.0.3.key'),
     cert: fs.readFileSync('./invalidCerts/57926271-192.168.0.3.cert'),
 }
-
+*/
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
-var server = https.createServer(options, app);
+//var server = https.createServer(options, app);
 var serverUnsecure = http.createServer(app);
-//var io = require('socket.io')(serverUnsecure);
-var io = require('socket.io')(server);
+var io = require('socket.io')(serverUnsecure);
+//var io = require('socket.io')(server);
 var p2p = require('socket.io-p2p-server').Server
 
 function redirectSec(req, res, next) {
@@ -191,14 +194,15 @@ io.on('connection', function(socket) {
 		socket.on('report', function(data) {		
 			banStatusModel.findOne({'ids': data})
 							.select('ip ids reportCount banned banStatus')
-							.exec(function(err, banStatusSchema){
-									bss = banStatusSchema;
-									bss.reportCount++;
-									if(bss.reportCount >= 5) {
-										bss.banned = Date.now() + (604800 * 1000);
-										bss.banStatus = true;
+							.exec(function(err, doc){
+								if(doc != null) {
+									doc.reportCount++;
+									if(doc.reportCount >= 5) {
+										doc.banned = Date.now() + (604800 * 1000);
+										doc.banStatus = true;
 									}
-									bss.save();
+										doc.save();
+									}	
 								})
 		});
 		
