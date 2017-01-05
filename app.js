@@ -10,8 +10,8 @@ var fs = require('fs');
 var mongoose = require('mongoose');
 
 //mongoose.connect('mongodb://localhost/om');
-mongoose.connect(OPENSHIFT_MONGODB_DB_URL+'om');
-1
+mongoose.connect("mongodb://$OPENSHIFT_MONGODB_DB_HOST:$OPENSHIFT_MONGODB_DB_PORT/om");
+
 var Schema = mongoose.Schema;
 var banStatusSchema = new Schema({
     ip: {type: String, index: {unique: true, required: true}},
