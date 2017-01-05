@@ -319,7 +319,7 @@ var main = function(stream){
 						p2p.emit('message', {name: username , 'text': encryptedMessage});
 					});
 				
-					userMsg = text.value
+					userMsg = text.value;
 					userMsgReplaced = userMsg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 					
 					messagesDiv.innerHTML += '<br><b style=\'color:#009fff\'>You</b>: ' + userMsgReplaced;
