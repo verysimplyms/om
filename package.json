@@ -18,6 +18,7 @@
     "simple-peer": "^6.0.4",
 	"socket.io": "*",
 	"socket.io-p2p-server": "*",
+	"socket.io-p2p": "*",
 	"mongoose": "*"
   }
 }
