@@ -13,7 +13,7 @@
     "express": "~4.13.1",
     "hjs": "~0.0.6",
     "morgan": "~1.6.1",
-    "openpgp": "^2.3.0",
+    "openpgp": "^4.9.1",
     "serve-favicon": "~2.3.0",
     "simple-peer": "^6.0.4",
 	"socket.io": "*"
